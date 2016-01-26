@@ -1,10 +1,15 @@
 const keys = {
-  restDb: '56a7e95ff735025c5e98ec80',
+  restDb: '56a80496f735025c5e98ec98',
 };
+
+const headers = new Headers({
+  'Content-Type': 'application/json',
+  'x-apikey': keys.restDb,
+});
 
 const Album = ({title, artists}) => (
     <div>
-      <h2>{title} by {artists.map(artist => artist.name).join(', ')}</h2>
+      <p>{title} by {artists.map(artist => artist.name).join(', ')}</p>
     </div>
 );
 
@@ -17,13 +22,13 @@ const AlbumList = ({albums}) => {
 };
 
 const TheAlbums = ({title, data}) => (
-    <div className="container">
+    <div>
       <h1>{title}</h1>
       <AlbumList albums={data}/>
     </div>
 );
 
-const Promised = (propName, Decorated) => class extends React.Component {
+const Promised = Decorated => class extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -55,14 +60,38 @@ const Promised = (propName, Decorated) => class extends React.Component {
 };
 
 const fetchAlbums = () => fetch('https://the-albums.restdb.io/rest/albums', {
-  headers: new Headers({
-    'Content-Type': 'application/json',
-    'x-apikey': keys.restDb,
-  }),
+  headers,
 });
 
-const TheAlbumsWithData = Promised("albums", TheAlbums);
+const TheAlbumsWithData = Promised(TheAlbums);
+
+const ArtistSummary = ({name}) => (
+    <div>
+      <p>{name}</p>
+    </div>
+);
+
+const TheArtists = ({data}) => (
+    <div>
+      <h1>Artists</h1>
+      {data.map(artist => <ArtistSummary key={artist._id} {...artist}/>)}
+    </div>
+);
+
+const fetchArtists = () => fetch('https://the-albums.restdb.io/rest/artists', {
+  headers,
+});
+
+const TheArtistsWithData = Promised(TheArtists);
+
+const App = (props) => (
+    <div className="container">
+      <TheAlbumsWithData title="FUNKY ALBUMS!" promise={fetchAlbums()}/>
+      <hr/>
+      <TheArtistsWithData promise={fetchArtists()}/>
+    </div>
+);
 
 ReactDOM.render((
-    <TheAlbumsWithData title="FUNKY ALBUMS!" promise={fetchAlbums()}/>
+    <App/>
 ), document.getElementById('container'));
